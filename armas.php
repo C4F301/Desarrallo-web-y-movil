@@ -71,10 +71,10 @@
                             </div>
                         </div>
                         <div class="carousel-item">
-                            <img src="img/bosque.webp" alt="Bosque" class="d-block w-100">
+                            <img src="img/axes.jpg" alt="Axes" class="d-block w-100">
                             <div class="text-center bg-dark text-white py-3">
-                                <h5>Bosque oscuro</h5>
-                                <p>Los biomas de Bosque Negro son peligrosos bosques de coníferas llenos de vegetación densa.</p>
+                                <h5>Axes Black Metal </h5>
+                                <p>Un tipo de hacha de metal negro conseguido en el Bioma Pantano.</p>
                             </div>
                         </div>
                         <div class="carousel-item">
