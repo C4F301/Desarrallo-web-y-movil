@@ -64,10 +64,10 @@
                     <!-- The slideshow/carousel -->
                     <div class="carousel-inner">
                         <div class="carousel-item active">
-                            <img src="img/hachas.webp" alt="Hachas" class="d-block w-50">
+                            <img src="img/ARMASPared.webp" alt="Armas" class="d-block w-50">
                             <div class="text-center bg-secondary text-black py-3">
-                                <h5>Hachas</h5>
-                                <p>Su ataque principal consiste en un combo de 4 pasos: dos golpes simples, uno con cada hacha.</p>
+                                <h5>Armas</h5>
+                                <p>Armas utilizadas en el juego.</p>
                             </div>
                         </div>
                         <div class="carousel-item">
