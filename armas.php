@@ -78,10 +78,10 @@
                             </div>
                         </div>
                         <div class="carousel-item">
-                            <img src="img/montaña.webp" alt="Montaña" class="d-block w-100">
+                            <img src="img/BlackMetalPickaxe.webp" alt="Pickaxe de Metal Negro" class="d-block w-100">
                             <div class="text-center bg-dark text-white py-3">
-                                <h5>Montañas</h5>
-                                <p>La Montaña es un bioma caracterizado por picos nevados y helados, enmarcados por abetos . </p>
+                                <h5>Pickaxe de Metal Negro</h5>
+                                <p>Una pico de metal negro conseguido en el Bioma Pantano.</p>
                             </div>
                         </div>
                     </div>
