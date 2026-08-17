@@ -70,14 +70,14 @@
                         </div>
                         <div class="carousel-item">
                             <img src="img/bosque.webp" alt="Bosque" class="d-block w-100">
-                            <div class="text-center bg-dark text-white py-3">
+                            <div class="text-center bg-secondary text-black py-3">
                                 <h5>Bosque oscuro</h5>
-                                <p>Los biomas de Bosque Negro son peligrosos bosques de coníferas llenos de vegetación densa.</p>
+                                <p>Los biomas de Bosque Negro son peligrosos bosques oscuro, llenos de vegetación densa.</p>
                             </div>
                         </div>
                         <div class="carousel-item">
                             <img src="img/montaña.webp" alt="Montaña" class="d-block w-100">
-                            <div class="text-center bg-dark text-white py-3">
+                            <div class="text-center bg-secondary text-black py-3">
                                 <h5>Montañas</h5>
                                 <p>La Montaña es un bioma caracterizado por picos nevados y helados, enmarcados por abetos . </p>
                             </div>

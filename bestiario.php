@@ -62,24 +62,24 @@
                     <!-- The slideshow/carousel -->
                     <div class="carousel-inner">
                         <div class="carousel-item active">
-                            <img src="img/praderas.webp" alt="Praderas" class="d-block w-100">
+                            <img src="img/venado.webp" alt="Venado" class="d-block w-20">
                             <div class="text-center bg-secondary text-black py-3">
-                                <h5>Las Praderas</h5>
-                                <p>Los Prados son biomas tranquilos e inofensivos, cubiertos de hierba y suaves colinas onduladas.</p>
+                                <h5>Eikthyr</h5>
+                                <p>Eikthyr es el primer jefe . Tiene la apariencia de un ciervo anormalmente grande con cadenas de hierro enrolladas alrededor de sus astas rojas electrificadas.</p>
                             </div>
                         </div>
                         <div class="carousel-item">
-                            <img src="img/bosque.webp" alt="Bosque" class="d-block w-100">
-                            <div class="text-center bg-dark text-white py-3">
-                                <h5>Bosque oscuro</h5>
-                                <p>Los biomas de Bosque Negro son peligrosos bosques de coníferas llenos de vegetación densa.</p>
+                            <img src="img/arbol.webp" alt="Árbol" class="d-block w-100">
+                            <div class="text-center bg-secondary text-black py-3">
+                                <h5>El Anciano</h5>
+                                <p>El Anciano es el segundo jefe . Tiene la apariencia de una imponente entidad humanoide con forma de árbol, con múltiples ramas delgadas que brotan de su cuerpo esbelto y cubierto de corteza.</p>
                             </div>
                         </div>
                         <div class="carousel-item">
-                            <img src="img/montaña.webp" alt="Montaña" class="d-block w-100">
-                            <div class="text-center bg-dark text-white py-3">
-                                <h5>Montañas</h5>
-                                <p>La Montaña es un bioma caracterizado por picos nevados y helados, enmarcados por abetos . </p>
+                            <img src="img/dragon.webp" alt="Dragon" class="d-block w-100">
+                            <div class="text-center bg-secondary text-black py-3">
+                                <h5>Mother</h5>
+                                <p>Moder es la cuarta jefa . Se presenta como un enorme dragón de hielo con escamas negras, una melena de pelo blanco y alas desgarradas. Según numerosas runas , es la madre de todos los dragones .</p>
                             </div>
                         </div>
                     </div>
