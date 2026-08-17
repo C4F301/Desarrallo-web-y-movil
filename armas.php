@@ -64,7 +64,7 @@
                     <!-- The slideshow/carousel -->
                     <div class="carousel-inner">
                         <div class="carousel-item active">
-                            <img src="img/ARMASPared.webp" alt="Armas" class="d-block w-50">
+                            <img src="img/hachas.webp" alt="Hachas" class="d-block w-50">
                             <div class="text-center bg-secondary text-black py-3">
                                 <h5>Armas</h5>
                                 <p>Armas utilizadas en el juego.</p>
