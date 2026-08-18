@@ -62,10 +62,10 @@
                     <!-- The slideshow/carousel -->
                     <div class="carousel-inner">
                         <div class="carousel-item active">
-                            <img src="img/praderas.webp" alt="Praderas" class="d-block w-100">
+                            <img src="img/hongo.webp" alt="Hongo" class="d-block w-100">
                             <div class="text-center bg-secondary text-black py-3">
-                                <h5>Las Praderas</h5>
-                                <p>Los Prados son biomas tranquilos e inofensivos, cubiertos de hierba y suaves colinas onduladas.</p>
+                                <h5>Buñuelos de Jotun</h5>
+                                <p>Se puede consumir directamente, pero la salud y la resistencia que proporciona son muy inferiores a las de otros alimentos disponibles en su categoría.</p>
                             </div>
                         </div>
                         <div class="carousel-item">

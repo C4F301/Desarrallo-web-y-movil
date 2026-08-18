@@ -64,24 +64,24 @@
                     <!-- The slideshow/carousel -->
                     <div class="carousel-inner">
                         <div class="carousel-item active">
-                            <img src="img/hachas.webp" alt="Hachas" class="d-block w-50">
-                            <div class="text-center bg-secondary text-black py-3">
+                            <img src="img/hachas.webp" alt="Hachas" class="d-block w-50 mx-auto">
+                            <div class="text-center bg-dark text-white py-3">
                                 <h5>Armas</h5>
                                 <p>Armas utilizadas en el juego.</p>
                             </div>
                         </div>
                         <div class="carousel-item">
-                            <img src="img/bosque.webp" alt="Bosque" class="d-block w-100">
+                            <img src="img/axes.jpg" alt="Axes" class="d-block w-20 mx-auto">
                             <div class="text-center bg-dark text-white py-3">
-                                <h5>Bosque oscuro</h5>
-                                <p>Los biomas de Bosque Negro son peligrosos bosques de coníferas llenos de vegetación densa.</p>
+                                <h5>Axes Black Metal </h5>
+                                <p>Un tipo de hacha de metal negro conseguido en el Bioma Pantano.</p>
                             </div>
                         </div>
                         <div class="carousel-item">
-                            <img src="img/montaña.webp" alt="Montaña" class="d-block w-100">
+                            <img src="img/BlackMetalPickaxe.webp" alt="Pickaxe de Metal Negro" class="d-block w-50 mx-auto">
                             <div class="text-center bg-dark text-white py-3">
-                                <h5>Montañas</h5>
-                                <p>La Montaña es un bioma caracterizado por picos nevados y helados, enmarcados por abetos . </p>
+                                <h5>Pickaxe de Metal Negro</h5>
+                                <p>Una pico de metal negro conseguido en el Bioma Pantano.</p>
                             </div>
                         </div>
                     </div>
