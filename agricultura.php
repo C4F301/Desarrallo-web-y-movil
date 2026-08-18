@@ -62,24 +62,24 @@
                     <!-- The slideshow/carousel -->
                     <div class="carousel-inner">
                         <div class="carousel-item active">
-                            <img src="img/praderas.webp" alt="Praderas" class="d-block w-100">
+                            <img src="img/hongo.webp" alt="Hongo" class="d-block w-100">
                             <div class="text-center bg-secondary text-black py-3">
-                                <h5>Las Praderas</h5>
-                                <p>Los Prados son biomas tranquilos e inofensivos, cubiertos de hierba y suaves colinas onduladas.</p>
+                                <h5>Jotun Puffs</h5>
+                                <p>Los Jotun puffs son cultivos que crecen en las Tierras de la Niebla . Se pueden encontrar de forma natural en el bioma y cultivarlos plantándolos con un Cultivador</p>
                             </div>
                         </div>
                         <div class="carousel-item">
-                            <img src="img/bosque.webp" alt="Bosque" class="d-block w-100">
+                            <img src="img/pared.webp" alt="Pared" class="d-block w-100">
                             <div class="text-center bg-dark text-white py-3">
-                                <h5>Bosque oscuro</h5>
-                                <p>Los biomas de Bosque Negro son peligrosos bosques de coníferas llenos de vegetación densa.</p>
+                                <h5>Vid de Ceniza</h5>
+                                <p>La vid de ceniza se puede encontrar en las Tierras Cenicientas , creciendo en los laterales de las ruinas carbonizadas.</p>
                             </div>
                         </div>
                         <div class="carousel-item">
-                            <img src="img/montaña.webp" alt="Montaña" class="d-block w-100">
+                            <img src="img/oreja.webp" alt="Oreja" class="d-block w-100">
                             <div class="text-center bg-dark text-white py-3">
-                                <h5>Montañas</h5>
-                                <p>La Montaña es un bioma caracterizado por picos nevados y helados, enmarcados por abetos . </p>
+                                <h5>Capsulas Magicas</h5>
+                                <p>Las capsulas magicas son objetos raros que se pueden encontrar en el bioma de la Montaña.</p>
                             </div>
                         </div>
                     </div>
