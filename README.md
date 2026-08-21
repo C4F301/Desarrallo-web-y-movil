@@ -1,1 +1,1 @@
-todo lo que se subira aqui es tarea para desarrollo web y movil
+Integrantes: Felipe Rivadeneira y Nadia Alvarez
