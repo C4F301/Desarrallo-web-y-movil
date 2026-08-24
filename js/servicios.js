@@ -95,7 +95,7 @@
 
                         <button
                             class="btn btn-warning mt-2"
-                            onclick="AgregarAlCarrito(${producto.id})"
+                            onclick="agregarAlCarrito(${producto.id})"
                         >
 
                             <i class="fa fa-shopping-cart"></i>
