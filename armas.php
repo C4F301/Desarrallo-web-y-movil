@@ -68,23 +68,23 @@
                     <div class="carousel-inner">
                         <div class="carousel-item active">
                             <img src="img/hachas.webp" alt="Hachas" class="d-block w-50 mx-auto">
-                            <div class="text-center bg-dark text-black py-3">
-                                <h5>Armas</h5>
-                                <p>Armas utilizadas en el juego.</p>
+                            <div class="text-center bg-secondary text-black py-3">
+                                <h5>Early Axes</h5>
+                                <p>Su ataque principal consiste en un combo de 4 pasos: dos golpes simples, uno con cada hacha, seguidos de dos golpes dobles con ambas hachas simultáneamente, para un total de 6 golpes.</p>
                             </div>
                         </div>
                         <div class="carousel-item">
-                            <img src="img/axes.jpg" alt="Axes" class="d-block w-50 mx-auto">
-                            <div class="text-center bg-dark text-black py-3">
-                                <h5>Axes Black Metal </h5>
-                                <p>Un tipo de hacha de metal negro conseguido en el Bioma Pantano.</p>
+                            <img src="img/hachametal.webp" alt="hachametal" class="d-block w-50 mx-auto">
+                            <div class="text-center bg-secondary text-black py-3">
+                                <h5>Hacha de Metal Negro</h5>
+                                <p>Un hacha perfectamente equilibrada, forjada en metal oscuro con un brillo esmeralda.</p>
                             </div>
                         </div>
                         <div class="carousel-item">
-                            <img src="img/BlackMetalPickaxe.webp" alt="Pickaxe de Metal Negro" class="d-block w-50 mx-auto">
-                            <div class="text-center bg-dark text-black py-3">
-                                <h5>Pickaxe de Metal Negro</h5>
-                                <p>Una pico de metal negro conseguido en el Bioma Pantano.</p>
+                            <img src="img/espada.webp" alt="" class="d-block w-50 mx-auto">
+                            <div class="text-center bg-secondary text-black py-3">
+                                <h5>Mistwalker</h5>
+                                <p>La hoja del Caminante de la Niebla está constantemente envuelta en niebla y emite un tenue brillo blanco azulado. Su luz es algo más tenue que la de la mayoría de las fuentes de luz convencionales, pero puede proporcionar algo de iluminación en la oscuridad.</p>
                             </div>
                         </div>
                     </div>

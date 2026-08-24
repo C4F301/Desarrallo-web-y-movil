@@ -66,24 +66,24 @@
                     <!-- The slideshow/carousel -->
                     <div class="carousel-inner">
                         <div class="carousel-item active">
-                            <img src="img/hongo.webp" alt="Hongo" class="d-block w-50 mx-auto">
+                            <img src="img/venado.webp" alt="Venado" class="d-block w-30 mx-auto">
                             <div class="text-center bg-secondary text-black py-3">
-                                <h5>Jotun Puffs</h5>
-                                <p>Los Jotun puffs son cultivos que crecen en las Tierras de la Niebla . Se pueden encontrar de forma natural en el bioma y cultivarlos plantándolos con un Cultivador</p>
+                                <h5>Eikthyr</h5>
+                                <p>Eikthyr es el primer jefe . Tiene la apariencia de un ciervo anormalmente grande con cadenas de hierro enrolladas alrededor de sus astas rojas electrificadas.</p>
                             </div>
                         </div>
                         <div class="carousel-item">
-                            <img src="img/pared.webp" alt="Pared" class="d-block w-50 mx-auto">
-                            <div class="text-center bg-dark text-black py-3">
-                                <h5>Vid de Ceniza</h5>
-                                <p>La vid de ceniza se puede encontrar en las Tierras Cenicientas , creciendo en los laterales de las ruinas carbonizadas.</p>
+                            <img src="img/arbol.webp" alt="Árbol" class="d-block w-30 mx-auto">
+                            <div class="text-center bg-secondary text-black py-3">
+                                <h5>El Anciano</h5>
+                                <p>El Anciano es el segundo jefe . Tiene la apariencia de una imponente entidad humanoide con forma de árbol, con múltiples ramas delgadas que brotan de su cuerpo esbelto y cubierto de corteza.</p>
                             </div>
                         </div>
                         <div class="carousel-item">
-                            <img src="img/oreja.webp" alt="Oreja" class="d-block w-50 mx-auto">
-                            <div class="text-center bg-dark text-black py-3">
-                                <h5>Capsulas Magicas</h5>
-                                <p>Las capsulas magicas son objetos raros que se pueden encontrar en el bioma de la Montaña.</p>
+                            <img src="img/dragon.webp" alt="Dragon" class="d-block w-30 mx-auto">
+                            <div class="text-center bg-secondary text-black py-3">
+                                <h5>Mother</h5>
+                                <p>Mother es la cuarta jefa . Se presenta como un enorme dragón de hielo con escamas negras, una melena de pelo blanco y alas desgarradas. Según numerosas runas , es la madre de todos los dragones .</p>
                             </div>
                         </div>
                     </div>
