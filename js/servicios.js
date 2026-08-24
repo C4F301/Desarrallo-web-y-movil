@@ -64,7 +64,7 @@
 
                 // COLUMNA 
                 const columna = document.createElement("div");
-                columna.className = "col-12 col-md col-lg-4";
+                columna.className = "col-12 col-md-6 col-lg-4";
 
                 // BLOQUE 
                 const bloque = document.createElement("div");
@@ -99,7 +99,7 @@
                         >
 
                             <i class="fa fa-shopping-cart"></i>
-                            agregar al carrito
+                            Agregar al carrito
                         </button>
                 
                     </div>
@@ -116,13 +116,22 @@
             // AGREGAR PRODUCTOS AL CARRITO 
 
             // function para calculo
-            onclick="AgregarAlCarrito(${producto.id})" 
+            function agregarAlCarrito(id) 
             {
+
+                // .log para mostrar mensaje, valores etc
+                console.log("Producto Seleccionado:", id);
 
                 // Busca el producto por el id 
                 // === para realizar una comparacion de igualdad estricta
                 // => ARROW FUNCTIONS funciones con flechas 
                 const producto = respuestaProductos.data.find(producto => producto.id === id);
+
+                if(producto) 
+                {
+                    console.error("No se encontro el producto ID", id);
+                    return;
+                }
 
                 // BUSCAR SI YA SE TIENE EL PRODUCTO EN EL CARRITO 
                 const productoExiste = carrito.find(producto => producto.id === id);
@@ -151,6 +160,8 @@
                     });
 
                 }
+
+                console.log("Carrito actual:", carrito);
 
                 // ACTUALIZAR CARRITO
                 actualizarCarrito();
@@ -183,6 +194,8 @@
 
                     contadorCarrito.textContent = 0;
                     totalCarrito.textContent = 0;
+
+                    return;
 
                 }
 
