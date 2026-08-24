@@ -55,11 +55,10 @@
                 ]
             };
 
-            // CARRITO
-            let carrito = [];
+            let carrito= [];
 
             // GENERA BLOQUE
-            const contenedor_Productos = document.getElementById("contenedorProductos");
+            const contenedorProductos = document.getElementById("contenedorProductos");
 
             respuestaProductos.data.forEach(producto => {
 
@@ -80,7 +79,7 @@
                         style="height: 250px; object-fit: contain;"
                     >
 
-                    <div class="card-body d-flex flex column">
+                    <div class="card-body d-flex flex-column">
 
                         <h5 class="card-title">
                             ${producto.nombre}
@@ -96,7 +95,7 @@
 
                         <button
                             class="btn btn-warning mt-2"
-                            onclick="Agregar_Al_Carrito(${producto.id})"
+                            onclick="AgregarAlCarrito(${producto.id})"
                         >
 
                             <i class="fa fa-shopping-cart"></i>
@@ -110,14 +109,14 @@
                 // Meter bloque dentro de la columna
                 columna.appendChild(bloque);
                 // Metemos la columna al contenerdor 
-                contenedor_Productos.appendChild(columna);
+                contenedorProductos.appendChild(columna);
 
             });
 
             // AGREGAR PRODUCTOS AL CARRITO 
 
             // function para calculo
-            function agregarAlCarrito(id) 
+            onclick="AgregarAlCarrito(${producto.id})" 
             {
 
                 // Busca el producto por el id 
@@ -203,7 +202,7 @@
                     listaCarrito.innerHTML += `
                     
                     <div class="card mb-2">
-                        <div class"card-body">
+                        <div class="card-body">
 
                             <h6>
 
@@ -233,6 +232,6 @@
                 });
 
                 contadorCarrito.textContent = cantidadTotal;
-                totalCarrito.textContent = total.toLocaleString("es-Cl");
+                totalCarrito.textContent = total.toLocaleString("es-CL");
 
             }
