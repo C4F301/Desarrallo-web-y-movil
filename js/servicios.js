@@ -1,8 +1,10 @@
 // ===== los productos =====
             const respuestaProductos = {
+
                 "status": 200,
                 "message": "Productos obtenidos correctamente",
                 "data": [
+
                     {
                         id: 1,
                         nombre: "Polera Filo de Hacha",
@@ -10,6 +12,7 @@
                         imagen: "img/hachas.webp",
                         descripcion: "Estampado inspirado en las armas del bioma pantano."
                     },
+
                     {
                         id: 2,
                         nombre: "Gorro Escama de Dragón",
@@ -17,6 +20,7 @@
                         imagen: "img/dragon.webp",
                         descripcion: "Gorro de lana con diseño del dragón guardián."
                     },
+
                     {
                         id: 3,
                         nombre: "Poster Bosque Oscuro",
@@ -24,6 +28,7 @@
                         imagen: "img/bosque.webp",
                         descripcion: "Poster decorativo del bioma más temido de ValhWiki."
                     },
+
                     {
                         id: 4,
                         nombre: "Polerón Praderas",
@@ -31,6 +36,7 @@
                         imagen: "img/praderas.webp",
                         descripcion: "Polerón con capucha, ideal para explorar los prados."
                     },
+
                     {
                         id: 5,
                         nombre: "Llavero Pico de Metal Negro",
@@ -38,6 +44,7 @@
                         imagen: "img/BlackMetalPickaxe.webp",
                         descripcion: "Réplica en miniatura del pico legendario."
                     },
+
                     {
                         id: 6,
                         nombre: "Bandana Cazador de Venados",
@@ -48,3 +55,55 @@
                 ]
             };
 
+            const contenedor_Productos = document.getElementById("contenedorProductos");
+
+            respuestaProductos.data.forEach(producto => {
+
+                const columna = document.createElement("div");
+                columna.className = "col-12 col-md col-lg-4";
+
+                const bloque = document.createElement("div");
+                bloque.className = "card h-100 shadow";
+
+                bloque.innerHTML = `
+                
+                    <img 
+                        src ="${producto.imagen}"
+                        class="card-img-top p-3"
+                        alt="${producto.nombre}"
+                        style="height: 250px; object-fit: contain;"
+                    >
+
+                    <div class="card-body d-flex flex column">
+
+                        <h5 class="card-title">
+                            ${producto.nombre}
+                        </h5>
+
+                        <p class="card-text">
+                            ${producto.descripcion}
+                        </p>
+
+                        <p class="h4 text-success mt-auto">
+                            $${producto.precio.toLocaleString("es-CL")}
+                        </p>
+
+                        <button
+                            class="btn btn-warning mt-2"
+                            onclick="Agregar_Al_Carrito(${producto.id})"
+                        >
+
+                            <i class="fa fa-shopping-cart"></i>
+                            agregar al carrito
+                        </button>
+                
+                    </div>
+
+                `;
+
+                // Meter bloque dentro de la columna
+                columna.appendChild(bloque);
+                // Metemos la columna al contenerdor 
+                contenedor_Productos.appendChild(columna);
+
+            });
