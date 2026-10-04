@@ -87,4 +87,45 @@ def logout(
     return{
         "message": "sesion terminada"
     }
-    
+
+@app.get("/health")
+def health():
+    return {
+        "status": "ok",
+        "service": "auth-service"
+    }
+
+@app.post("/introspect")
+def introspect(
+    request: IntrospectionRequest,
+    x_gateway_auth_secret: str = Header(default="")
+):
+    if not secrets.comparte_digest(
+        x_gateway_auth_secret,
+        AUTH_INSTROSPECTION_SECRET
+    ):
+
+        raise HTTPException(
+            status_code=403,
+            detail="Gateway no autorizado"
+        )
+
+    session = SESSIONS.get(request.token)
+    if session is None:
+        return {
+            "active": False
+        }
+
+    if (datetime.now(timezone.utc) > session["expires_at"]):
+        SESSIONS.pop(request.token)
+        return {
+            "active": False
+        }
+
+    return{
+        "active": True,
+        "user_id": session["user_id"],
+        "username": session["username"],
+        "roles": session["roles"],
+        "expires_at": session["expires_at"].isoformat()
+    }
