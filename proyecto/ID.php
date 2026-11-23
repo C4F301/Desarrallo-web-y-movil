@@ -39,11 +39,17 @@
                     </li>
                 </ul>
 
-                <div class="d-flex align-items-center gap-2 mt-2 mt-lg-0">
+                <div class="d-flex align-items-center gap-2 mt-2 mt-lg-0" id="contenedorCuentaNavbar">
+                    <span id="badgeUsuarioLoggeado" class="badge bg-dark text-warning px-3 py-2 d-none">
+                        <i class="fa fa-user-circle me-1"></i> <span id="nombreUsuarioLoggeado"></span>
+                    </span>
                     <button type="button" class="btn btn-outline-dark position-relative fw-bold" data-bs-toggle="offcanvas" data-bs-target="#carritoOffcanvas">
                         <i class="fa fa-shopping-cart"></i> Carrito
                         <span id="contadorCarrito" class="badge bg-danger rounded-pill ms-1">0</span>
                     </button>
+                    <a href="index.php" id="btnCuentaNavbar" class="btn btn-outline-danger fw-bold">
+                        <i class="fa fa-user"></i> Cuenta
+                    </a>
                 </div>
             </div>
         </div>
