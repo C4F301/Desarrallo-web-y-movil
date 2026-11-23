@@ -34,6 +34,17 @@ def es_publica(service: str, path: str, method: str) -> bool:
         return True
     return False
 
+def describir_operacion_bd(service: str, path: str, method: str) -> str:
+    clean_path = path.strip("/")
+    if service == "inventory" and method == "GET":
+        coleccion = "pizzas" if clean_path == "items" else "combos"
+        return f"consulta/lectura BD (find) en '{coleccion}'"
+    if service == "orders" and clean_path == "orders" and method == "POST":
+        return "escritura/persistencia BD (insert_one) en 'orders'"
+    if service == "orders" and clean_path == "contact" and method == "POST":
+        return "escritura/persistencia BD (insert_one) en 'contactos'"
+    return f"operación {method} en servicio '{service}'"
+
 ROLES_REQUERIDOS = {
     ("orders", "POST"): {"cliente", "admin"},
 }
@@ -58,38 +69,50 @@ async def validar_token(token: str) -> dict:
 
 @app.api_route("/api/v1/{service}/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
 async def proxy(service: str, path: str, request: Request):
-    log.info("Petición recibida: %s /%s/%s", request.method, service, path)
+    clean_path = path.strip("/")
+    log.info("Petición recibida: %s /api/v1/%s/%s", request.method, service, clean_path)
 
     if service == "inventory":
-        target_url = f"{INVENTORY_URL}/{path}"
+        target_url = f"{INVENTORY_URL}/{clean_path}"
     elif service == "orders":
-        target_url = f"{ORDERS_URL}/{path}"
-    elif service == "auth" and path in ("login", "register"):
-        target_url = f"{AUTH_URL}/{path}"
+        target_url = f"{ORDERS_URL}/{clean_path}"
+    elif service == "auth" and clean_path in ("login", "register"):
+        target_url = f"{AUTH_URL}/{clean_path}"
     else:
-        log.warning("Servicio no encontrado: %s/%s -> 404", service, path)
+        log.warning("Servicio o ruta no encontrada: %s/%s -> 404", service, clean_path)
         raise HTTPException(status_code=404, detail="Servicio no encontrado")
 
     headers = {"X-Gateway-Secret": SHARED_SECRET}
 
-    if es_publica(service, path, request.method):
+    if es_publica(service, clean_path, request.method):
         log.info("Ruta pública: no requiere token")
     else:
         auth_header = request.headers.get("authorization", "")
         if not auth_header.lower().startswith("bearer "):
             log.warning("Sin token Bearer -> 401 (no se enruta)")
-            raise HTTPException(status_code=401, detail="Debes iniciar sesión o crear una cuenta para comprar")
-
+            raise HTTPException(
+                status_code=401,
+                detail="Debes iniciar sesión o crear una cuenta para comprar",
+            )
+            
         token = auth_header[7:].strip()
         sesion = await validar_token(token)
         if not sesion.get("active"):
             log.warning("Auth Service: token inválido o expirado -> 401 (no se enruta)")
             raise HTTPException(status_code=401, detail="Token inválido o expirado")
-        log.info("Auth Service: token ACTIVO user=%s roles=%s", sesion.get("user_id"), sesion.get("roles"))
-
+        log.info(
+            "Auth Service: token ACTIVO user=%s roles=%s",
+            sesion.get("user_id"),
+            sesion.get("roles"),
+        )
+        
         requeridos = ROLES_REQUERIDOS.get((service, request.method))
         if requeridos and not requeridos.intersection(sesion.get("roles", [])):
-            log.warning("Autorización DENEGADA: roles %s no incluyen %s -> 403", sesion.get("roles"), sorted(requeridos))
+            log.warning(
+                "Autorización DENEGADA: roles %s no incluyen %s -> 403",
+                sesion.get("roles"),
+                sorted(requeridos),
+            )
             raise HTTPException(status_code=403, detail="Rol sin permiso para esta operación")
         log.info("Autorización OK para %s %s", request.method, service)
 
@@ -100,7 +123,9 @@ async def proxy(service: str, path: str, request: Request):
     if request.headers.get("content-type"):
         headers["content-type"] = request.headers.get("content-type")
 
-    log.info("Enrutando %s -> %s", request.method, target_url)
+    operacion_bd = describir_operacion_bd(service, clean_path, request.method)
+    log.info("Enrutando %s -> %s (%s)", request.method, target_url, operacion_bd)
+
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             res = await client.request(
@@ -110,11 +135,17 @@ async def proxy(service: str, path: str, request: Request):
                 content=body,
                 headers=headers,
             )
+            
     except httpx.RequestError:
         log.error("Microservicio no disponible: %s -> 502", target_url)
         raise HTTPException(status_code=502, detail="Microservicio no disponible")
 
-    log.info("Respuesta del backend: %s (%s)", res.status_code, service)
+    log.info(
+        "Respuesta del backend: %s (%s) | %s",
+        res.status_code,
+        service,
+        operacion_bd,
+    )
     return Response(
         content=res.content,
         status_code=res.status_code,
