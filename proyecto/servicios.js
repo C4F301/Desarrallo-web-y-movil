@@ -28,25 +28,112 @@ function estaLogueado() { return Boolean(leerLS(KEY_TOKEN, null)); }
 let carrito = leerLS(KEY_CARRITO, []);
 let catalogo = {};
 
+// ===== Inyectar Modal de Cuenta si la página no lo tiene =====
+function asegurarModalCuenta() {
+    if (document.getElementById("myModal")) return;
+
+    const modalHtml = `
+    <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="myModalLabel"><i class="fa fa-user-circle me-2"></i> Mi Cuenta</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="d-flex justify-content-center gap-2 mb-4">
+                        <button class="btn btn-warning fw-bold w-50" type="button" data-bs-toggle="collapse" data-bs-target="#formLogin" aria-expanded="true" aria-controls="formLogin">
+                            Iniciar Sesión
+                        </button>
+                        <button class="btn btn-outline-dark fw-bold w-50" type="button" data-bs-toggle="collapse" data-bs-target="#formRegistro" aria-expanded="false" aria-controls="formRegistro">
+                            Registrarse
+                        </button>
+                    </div>
+
+                    <div class="collapse show" id="formLogin" data-bs-parent="#myModal">
+                        <form>
+                            <h5 class="fw-bold mb-3">Ingresar a tu Cuenta</h5>
+                            <div class="mb-3">
+                                <label for="loginEmail" class="form-label">Correo Electrónico</label>
+                                <input type="email" class="form-control" id="loginEmail" name="email" placeholder="tu@email.com" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="loginPassword" class="form-label">Contraseña</label>
+                                <input type="password" class="form-control" id="loginPassword" name="password" placeholder="••••••••" required>
+                            </div>
+                            <button type="submit" class="btn btn-warning w-100 fw-bold">Ingresar</button>
+                        </form>
+                    </div>
+
+                    <div class="collapse" id="formRegistro" data-bs-parent="#myModal">
+                        <form>
+                            <h5 class="fw-bold mb-3">Crear nueva cuenta</h5>
+                            <div class="mb-3">
+                                <label for="regNombre" class="form-label">Nombre Completo</label>
+                                <input type="text" class="form-control" id="regNombre" name="nombre" placeholder="Ej: Juan Pérez" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="regEmail" class="form-label">Correo Electrónico</label>
+                                <input type="email" class="form-control" id="regEmail" name="email" placeholder="tu@email.com" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="regPassword" class="form-label">Contraseña</label>
+                                <input type="password" class="form-control" id="regPassword" name="password" placeholder="••••••••" required>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100 fw-bold">Registrarse</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`;
+
+    document.body.insertAdjacentHTML("beforeend", modalHtml);
+}
+
+function abrirModalCuenta() {
+    asegurarModalCuenta();
+    const modalEl = document.getElementById("myModal");
+    if (modalEl && window.bootstrap) {
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    }
+}
+
 // ===== UI de Sesión y Campo de Dirección en el Carrito =====
 function prepararUIUsuario() {
+    asegurarModalCuenta();
+
     const token = leerLS(KEY_TOKEN, null);
     const user = leerLS(KEY_USER, null);
     const btnCuenta = document.getElementById("btnCuentaNavbar") || document.querySelector('[data-bs-target="#myModal"]');
-    if (btnCuenta && token && user) {
-        btnCuenta.className = "btn btn-success fw-bold";
-        btnCuenta.innerHTML = `<i class="fa fa-user"></i> ${esc(user)} (Salir)`;
-        btnCuenta.removeAttribute("data-bs-toggle");
-        btnCuenta.removeAttribute("href");
-        btnCuenta.onclick = (e) => {
-            e.preventDefault();
-            borrarLS(KEY_TOKEN);
-            borrarLS(KEY_USER);
-            carrito = [];
-            guardarLS(KEY_CARRITO, carrito);
-            alert("Sesión cerrada.");
-            window.location.href = "index.php";
-        };
+
+    if (btnCuenta) {
+        if (token && user) {
+            btnCuenta.className = "btn btn-success fw-bold";
+            btnCuenta.innerHTML = `<i class="fa fa-user"></i> ${esc(user)} (Salir)`;
+            btnCuenta.removeAttribute("data-bs-toggle");
+            btnCuenta.removeAttribute("data-bs-target");
+            btnCuenta.removeAttribute("href");
+            btnCuenta.onclick = (e) => {
+                e.preventDefault();
+                borrarLS(KEY_TOKEN);
+                borrarLS(KEY_USER);
+                carrito = [];
+                guardarLS(KEY_CARRITO, carrito);
+                alert("Sesión cerrada.");
+                window.location.reload();
+            };
+        } else {
+            btnCuenta.className = "btn btn-outline-danger fw-bold";
+            btnCuenta.innerHTML = `<i class="fa fa-user"></i> Cuenta`;
+            btnCuenta.removeAttribute("href");
+            btnCuenta.setAttribute("data-bs-toggle", "modal");
+            btnCuenta.setAttribute("data-bs-target", "#myModal");
+            btnCuenta.onclick = (e) => {
+                e.preventDefault();
+                abrirModalCuenta();
+            };
+        }
     }
 
     // Insertar campo de dirección en el offcanvas del carrito si aún no existe
@@ -97,8 +184,8 @@ function renderCarrito() {
 }
 
 function exigirCuenta(mensaje) {
-    alert(mensaje);
-    window.location.href = "index.php?login=1";
+    if (mensaje) alert(mensaje);
+    abrirModalCuenta();
 }
 
 function agregarAlCarrito(id) {
@@ -203,7 +290,6 @@ async function cargarCatalogo() {
 async function finalizarCompra() {
     const token = leerLS(KEY_TOKEN, null);
     if (!token) {
-        // Petición sin token para evidenciar el bloqueo 401 en Network y Gateway
         await fetch(`${API}/orders/orders`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -262,8 +348,10 @@ async function finalizarCompra() {
     }
 }
 
-// ===== Login y Registro con Auto-Login =====
+// ===== Login y Registro con Auto-Login en la misma página =====
 function iniciarCuenta() {
+    asegurarModalCuenta();
+
     const formLogin = document.querySelector("#formLogin form");
     if (formLogin) {
         formLogin.addEventListener("submit", async (ev) => {
@@ -292,8 +380,8 @@ function iniciarCuenta() {
                 guardarLS(KEY_TOKEN, data.access_token);
                 guardarLS(KEY_USER, email);
                 aviso.className = "aviso-login small mt-2 text-success";
-                aviso.textContent = "Sesión iniciada como " + email + ". Redirigiendo al menú...";
-                setTimeout(() => { window.location.href = "menu.php"; }, 600);
+                aviso.textContent = "Sesión iniciada como " + email + ".";
+                setTimeout(() => { window.location.reload(); }, 400);
             } catch (e) {
                 aviso.className = "aviso-login small mt-2 text-danger";
                 aviso.textContent = "No se pudo conectar con el API Gateway.";
@@ -327,12 +415,11 @@ function iniciarCuenta() {
                     aviso.textContent = data.detail || "No se pudo registrar la cuenta";
                     return;
                 }
-                // Auto-login inmediato con el token devuelto por /register
                 guardarLS(KEY_TOKEN, data.access_token);
                 guardarLS(KEY_USER, email);
                 aviso.className = "aviso-reg small mt-2 text-success";
-                aviso.textContent = "¡Cuenta creada y sesión iniciada como " + email + "! Redirigiendo al menú...";
-                setTimeout(() => { window.location.href = "menu.php"; }, 600);
+                aviso.textContent = "¡Cuenta creada y sesión iniciada como " + email + "!";
+                setTimeout(() => { window.location.reload(); }, 400);
             } catch (e) {
                 aviso.className = "aviso-reg small mt-2 text-danger";
                 aviso.textContent = "No se pudo conectar con el API Gateway.";
@@ -341,8 +428,7 @@ function iniciarCuenta() {
     }
 
     if (new URLSearchParams(window.location.search).get("login") === "1") {
-        const modalEl = document.getElementById("myModal");
-        if (modalEl && window.bootstrap) bootstrap.Modal.getOrCreateInstance(modalEl).show();
+        abrirModalCuenta();
     }
 }
 
