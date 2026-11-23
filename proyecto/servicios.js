@@ -32,12 +32,14 @@ let catalogo = {};
 function prepararUIUsuario() {
     const token = leerLS(KEY_TOKEN, null);
     const user = leerLS(KEY_USER, null);
-    const btnCuenta = document.querySelector('[data-bs-target="#myModal"]');
+    const btnCuenta = document.getElementById("btnCuentaNavbar") || document.querySelector('[data-bs-target="#myModal"]');
     if (btnCuenta && token && user) {
         btnCuenta.className = "btn btn-success fw-bold";
         btnCuenta.innerHTML = `<i class="fa fa-user"></i> ${esc(user)} (Salir)`;
         btnCuenta.removeAttribute("data-bs-toggle");
-        btnCuenta.onclick = () => {
+        btnCuenta.removeAttribute("href");
+        btnCuenta.onclick = (e) => {
+            e.preventDefault();
             borrarLS(KEY_TOKEN);
             borrarLS(KEY_USER);
             carrito = [];
