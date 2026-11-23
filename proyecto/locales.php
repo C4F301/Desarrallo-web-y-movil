@@ -175,7 +175,7 @@
         </div>
     </div>
 
-        <footer class="bg-dark text-white pt-5 pb-3 mt-auto">
+    <footer class="bg-dark text-white pt-5 pb-3 mt-auto">
         <div class="container">
             <div class="row g-4 text-center text-md-start">
                 <div class="col-md-4">
@@ -206,6 +206,6 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="servicios.js"></script>
+    <script src="servicios.js?v=3"></script>
 </body>
 </html>

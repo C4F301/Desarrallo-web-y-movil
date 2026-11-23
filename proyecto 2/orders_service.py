@@ -56,10 +56,15 @@ class CrearPedidoIn(BaseModel):
     local_id: Optional[str] = "casona"
 
 @app.post("/orders", status_code=status.HTTP_201_CREATED)
-async def crear_orden(pedido: CrearPedidoIn, x_gateway_secret: str = Header(default="")):
+async def crear_orden(
+    pedido: CrearPedidoIn,
+    x_gateway_secret: str = Header(default=""),
+    x_user_id: str = Header(default=""),
+):
     validar_secreto_gateway(x_gateway_secret, "/orders")
+    logger.info(f"Crear orden: {len(pedido.items)} item(s), usuario={x_user_id or 'desconocido'}")
 
-    PRECIOS_BASE_CUSTOM = {"mediana": 7000, "familiar": 12000, "familiar xl": 15000}
+    PRECIOS_BASE_CUSTOM = {"mediana": 7000, "familiar": 10000, "familiar xl": 13000}
     PRECIO_EXTRA = 1000
 
     total_calculado = 0.0
@@ -90,7 +95,7 @@ async def crear_orden(pedido: CrearPedidoIn, x_gateway_secret: str = Header(defa
         # 3. Si es pizza personalizada
         if precio_item == 0.0 and item.personalizada:
             tamano_key = (item.personalizada.tamano or "familiar").lower()
-            base = PRECIOS_BASE_CUSTOM.get(tamano_key, 12000)
+            base = PRECIOS_BASE_CUSTOM.get(tamano_key, 10000)
             extras_costo = len(item.personalizada.extras or []) * PRECIO_EXTRA
             precio_item = base + extras_costo
 
@@ -105,15 +110,19 @@ async def crear_orden(pedido: CrearPedidoIn, x_gateway_secret: str = Header(defa
         "tipo_entrega": pedido.tipo_entrega,
         "direccion": pedido.direccion,
         "local_id": pedido.local_id,
+        "cliente_id": x_user_id or None,
         "total": total_calculado,
         "estado": "PENDIENTE_PAGO"
     }
     
     try:
+        logger.info(f"MongoDB insert_one en 'orders' (total={total_calculado}, cliente={x_user_id})")
         res = await db.orders.insert_one(doc_orden)
         nuevo_id = str(res.inserted_id)
-    except Exception:
-        nuevo_id = str(ObjectId())
+        logger.info(f"MongoDB insert_one en 'orders' exitoso: _id={nuevo_id}")
+    except Exception as e:
+        logger.error(f"MongoDB ERROR al insertar la orden: {e}")
+        raise HTTPException(status_code=503, detail="No se pudo guardar el pedido en la base de datos")
 
     return {
         "id": nuevo_id,
@@ -130,6 +139,6 @@ async def registrar_contacto(datos: dict, x_gateway_secret: str = Header(default
         res = await db.contactos.insert_one(datos)
         logger.info(f"MongoDB insert_one en 'contactos' exitoso: _id={res.inserted_id}")
     return {
-        "id": "msg_01",
+        "id": str(res.inserted_id) if db is not None else "msg_01",
         "estado": "RECIBIDO"
     }
