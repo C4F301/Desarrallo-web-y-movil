@@ -4,7 +4,14 @@ from pydantic import BaseModel
 from motor.motor_asyncio import AsyncIOMotorClient
 from contextlib import asynccontextmanager
 from bson import ObjectId
+import logging
 import os
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] [orders_service] %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
 SHARED_SECRET = os.getenv("BACKEND_SHARED_SECRET", "mi_secreto_compartido")
@@ -12,13 +19,21 @@ SHARED_SECRET = os.getenv("BACKEND_SHARED_SECRET", "mi_secreto_compartido")
 client: AsyncIOMotorClient = None
 db = None
 
+def validar_secreto_gateway(x_gateway_secret: str, ruta: str) -> None:
+    if not x_gateway_secret or x_gateway_secret != SHARED_SECRET:
+        logger.warning(f"403 Forbidden en {ruta}: X-Gateway-Secret invalido o ausente")
+        raise HTTPException(status_code=403, detail="Acceso no autorizado al backend")
+    logger.info(f"Secreto OK en {ruta}: X-Gateway-Secret validado")
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global client, db
     client = AsyncIOMotorClient(MONGODB_URL)
     db = client["pizzeria"]
+    logger.info("Conectado a MongoDB (base de datos: pizzeria)")
     yield
     client.close()
+    logger.info("Conexion a MongoDB cerrada")
 
 app = FastAPI(title="Orders Service - La Fornace", lifespan=lifespan)
 
@@ -42,8 +57,7 @@ class CrearPedidoIn(BaseModel):
 
 @app.post("/orders", status_code=status.HTTP_201_CREATED)
 async def crear_orden(pedido: CrearPedidoIn, x_gateway_secret: str = Header(default="")):
-    if x_gateway_secret != SHARED_SECRET:
-        raise HTTPException(status_code=403, detail="Acceso no autorizado al backend")
+    validar_secreto_gateway(x_gateway_secret, "/orders")
 
     PRECIOS_BASE_CUSTOM = {"mediana": 7000, "familiar": 12000, "familiar xl": 15000}
     PRECIO_EXTRA = 1000
@@ -57,15 +71,17 @@ async def crear_orden(pedido: CrearPedidoIn, x_gateway_secret: str = Header(defa
         # 1. Intentar obtener el precio desde MongoDB si hay un ID válido
         if p_id and db is not None:
             try:
-                # Buscar en colección pizzas o en combos
+                logger.info(f"MongoDB find_one en 'pizzas' con _id={p_id}")
                 prod = await db.pizzas.find_one({"_id": ObjectId(p_id)})
                 if not prod:
+                    logger.info(f"MongoDB find_one en 'combos' con _id={p_id}")
                     prod = await db.combos.find_one({"_id": ObjectId(p_id)})
-                
+
                 if prod and "precio" in prod:
                     precio_item = float(prod["precio"])
-            except Exception:
-                pass
+                    logger.info(f"Precio obtenido desde MongoDB para id={p_id}: {precio_item}")
+            except Exception as e:
+                logger.warning(f"Error consultando MongoDB para id={p_id}: {e}")
 
         # 2. Si no se encontró en DB usar el precio enviado desde el frontend
         if precio_item == 0.0 and item.precio:
@@ -107,9 +123,12 @@ async def crear_orden(pedido: CrearPedidoIn, x_gateway_secret: str = Header(defa
     }
 
 @app.post("/contact", status_code=status.HTTP_201_CREATED)
-async def registrar_contacto(datos: dict):
+async def registrar_contacto(datos: dict, x_gateway_secret: str = Header(default="")):
+    validar_secreto_gateway(x_gateway_secret, "/contact")
+
     if db is not None:
-        await db.contactos.insert_one(datos)
+        res = await db.contactos.insert_one(datos)
+        logger.info(f"MongoDB insert_one en 'contactos' exitoso: _id={res.inserted_id}")
     return {
         "id": "msg_01",
         "estado": "RECIBIDO"
