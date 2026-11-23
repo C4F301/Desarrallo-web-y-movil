@@ -1,280 +1,377 @@
-const API_BASE_URL = "http://localhost:8000/api/v1";
-let carrito = [];
+// ===== Configuración =====
+const API = "http://localhost:8000/api/v1";
+const KEY_TOKEN = "fornace_token";
+const KEY_USER = "fornace_user";
+const KEY_CARRITO = "fornace_carrito";
 
-document.addEventListener("DOMContentLoaded", () => {
-    cargarCombos();
-    cargarPizzasTradicionales();
-});
-
-// --- 1. CARGAR CATÁLOGO DE PIZZAS DESDE INVENTORY SERVICE ---
-async function cargarPizzasTradicionales() {
-    const contenedorPizzas = document.getElementById("contenedorPizzas");
-    if (!contenedorPizzas) return;
-
+// ===== Utilidades =====
+function leerLS(clave, defecto) {
     try {
-        const response = await fetch(`${API_BASE_URL}/inventory/items`);
-        const pizzas = await response.json();
+        const v = localStorage.getItem(clave);
+        return v ? JSON.parse(v) : defecto;
+    } catch (e) { return defecto; }
+}
+function guardarLS(clave, valor) {
+    try { localStorage.setItem(clave, JSON.stringify(valor)); } catch (e) { /* sin storage */ }
+}
+function borrarLS(clave) {
+    try { localStorage.removeItem(clave); } catch (e) { /* sin storage */ }
+}
+function esc(texto) {
+    const d = document.createElement("div");
+    d.textContent = texto == null ? "" : String(texto);
+    return d.innerHTML;
+}
+function clp(n) { return Number(n).toLocaleString("es-CL"); }
+function estaLogueado() { return Boolean(leerLS(KEY_TOKEN, null)); }
 
-        contenedorPizzas.innerHTML = "";
-        pizzas.forEach(pizza => {
-            const col = document.createElement("div");
-            col.className = "col-12 col-md-6 col-lg-4";
-            
-            const idPizza = String(pizza._id || pizza.id || "p_def");
-            const nombre = String(pizza.nombre || "Pizza").replace(/'/g, "\\'");
-            const precio = Number(pizza.precio) || 0;
-            const ingredientesTexto = Array.isArray(pizza.ingredientes) 
-                ? pizza.ingredientes.join(", ") 
-                : (pizza.ingredientes || "");
+let carrito = leerLS(KEY_CARRITO, []);
+let catalogo = {};
 
-            col.innerHTML = `
-                <div class="card h-100 shadow-sm border-0">
-                    <img src="${pizza.imagen || ''}" class="card-img-top p-2" alt="${nombre}" style="height: 200px; object-fit: cover; border-radius: 15px;">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title fw-bold">${nombre}</h5>
-                        <p class="card-text text-muted small">${ingredientesTexto}</p>
-                        <p class="h4 text-danger fw-bold mt-auto">$${precio.toLocaleString("es-CL")}</p>
-                        <button class="btn btn-outline-dark mt-2 fw-bold" onclick="agregarAlCarrito('${idPizza}', '${nombre}', ${precio}, '${ingredientesTexto.replace(/'/g, "\\'")}')">
-                            <i class="fa fa-shopping-cart"></i> Agregar
-                        </button>
-                    </div>
-                </div>
-            `;
-            contenedorPizzas.appendChild(col);
-        });
-    } catch (error) {
-        console.error("Error al cargar pizzas:", error);
+// ===== UI de Sesión y Campo de Dirección en el Carrito =====
+function prepararUIUsuario() {
+    const token = leerLS(KEY_TOKEN, null);
+    const user = leerLS(KEY_USER, null);
+    const btnCuenta = document.querySelector('[data-bs-target="#myModal"]');
+    if (btnCuenta && token && user) {
+        btnCuenta.className = "btn btn-success fw-bold";
+        btnCuenta.innerHTML = `<i class="fa fa-user"></i> ${esc(user)} (Salir)`;
+        btnCuenta.removeAttribute("data-bs-toggle");
+        btnCuenta.onclick = () => {
+            borrarLS(KEY_TOKEN);
+            borrarLS(KEY_USER);
+            carrito = [];
+            guardarLS(KEY_CARRITO, carrito);
+            alert("Sesión cerrada.");
+            window.location.href = "index.php";
+        };
+    }
+
+    // Insertar campo de dirección en el offcanvas del carrito si aún no existe
+    const totalEl = document.getElementById("totalCarrito");
+    if (totalEl && !document.getElementById("direccionEntrega")) {
+        const contenedorTotal = totalEl.closest(".border-top");
+        if (contenedorTotal) {
+            const divDir = document.createElement("div");
+            divDir.className = "mb-3";
+            divDir.innerHTML = `
+                <label for="direccionEntrega" class="form-label fw-bold small mb-1">
+                    <i class="fa fa-map-marker text-danger"></i> Dirección de Entrega:
+                </label>
+                <input type="text" id="direccionEntrega" class="form-control form-control-sm"
+                    placeholder="Ej: Fernández Concha 700, Las Condes" required>`;
+            contenedorTotal.insertBefore(divDir, contenedorTotal.firstChild);
+        }
     }
 }
 
-// --- 2. CARGAR COMBOS Y PROMOCIONES ---
-async function cargarCombos() {
-    const contenedorCombos = document.getElementById("contenedorCombos");
-    if (!contenedorCombos) return;
+// ===== Carrito =====
+function renderCarrito() {
+    const lista = document.getElementById("listaCarrito");
+    const total = document.getElementById("totalCarrito");
+    const contador = document.getElementById("contadorCarrito");
+    if (!lista) return;
 
-    try {
-        const response = await fetch(`${API_BASE_URL}/inventory/combos`);
-        const combos = await response.json();
-        contenedorCombos.innerHTML = "";
-
-        combos.forEach(combo => {
-            const col = document.createElement("div");
-            col.className = "col-12 col-md-6";
-            const idCombo = String(combo._id || combo.id || "c_def");
-            const nombre = String(combo.nombre || "Combo").replace(/'/g, "\\'");
-            const precio = Number(combo.precio) || 0;
-
-            col.innerHTML = `
-                <div class="card h-100 border-warning border-2 shadow-sm">
-                    <div class="row g-0 h-100 align-items-center">
-                        <div class="col-md-5">
-                            <img src="${combo.imagen || ''}" class="img-fluid rounded-start h-100" style="object-fit: cover;" alt="${nombre}">
-                        </div>
-                        <div class="col-md-7">
-                            <div class="card-body d-flex flex-column h-100">
-                                <span class="badge bg-danger mb-2 w-auto me-auto">¡Super Promo!</span>
-                                <h5 class="card-title fw-bold">${nombre}</h5>
-                                <p class="card-text small text-muted">${combo.descripcion || ''}</p>
-                                <p class="h4 text-success fw-bold mt-auto">$${precio.toLocaleString("es-CL")}</p>
-                                <button class="btn btn-warning mt-2 fw-bold" onclick="agregarAlCarrito('${idCombo}', '${nombre}', ${precio}, 'Promoción Delivery')">
-                                    <i class="fa fa-shopping-cart"></i> Agregar Promo
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            contenedorCombos.appendChild(col);
-        });
-    } catch (error) {
-        console.error("Error al cargar combos:", error);
-    }
-}
-
-// --- 3. LÓGICA DEL CARRITO DE COMPRAS ---
-function agregarAlCarrito(id, nombre, precio, detalles) {
-    const itemExistente = carrito.find(item => item.id === id);
-    if (itemExistente) {
-        itemExistente.cantidad += 1;
-    } else {
-        carrito.push({ id, nombre, precio: Number(precio), detalles, cantidad: 1 });
-    }
-    actualizarCarrito();
-}
-
-function quitarDelCarrito(id) {
-    carrito = carrito.filter(item => item.id !== id);
-    actualizarCarrito();
-}
-
-function actualizarCarrito() {
-    const listaCarrito = document.getElementById("listaCarrito");
-    const contadorCarrito = document.getElementById("contadorCarrito");
-    const totalCarrito = document.getElementById("totalCarrito");
-
-    if (!listaCarrito) return;
-    listaCarrito.innerHTML = "";
-
+    let suma = 0, unidades = 0;
     if (carrito.length === 0) {
-        listaCarrito.innerHTML = `<p class="text-muted text-center my-4">El carrito está vacío</p>`;
-        if (contadorCarrito) contadorCarrito.textContent = 0;
-        if (totalCarrito) totalCarrito.textContent = 0;
+        lista.innerHTML = '<p class="text-muted text-center my-4">El carrito está vacío</p>';
+    } else {
+        lista.innerHTML = carrito.map((it, i) => {
+            suma += it.precio * it.cantidad;
+            unidades += it.cantidad;
+            return `<div class="d-flex justify-content-between align-items-start border-bottom py-2">
+                <div>
+                    <div class="fw-bold">${esc(it.nombre)} x${it.cantidad}</div>
+                    ${it.detalle ? `<div class="small text-muted">${esc(it.detalle)}</div>` : ""}
+                    <div class="small">$${clp(it.precio * it.cantidad)}</div>
+                </div>
+                <button class="btn btn-sm btn-outline-danger" onclick="quitarDelCarrito(${i})">&times;</button>
+            </div>`;
+        }).join("");
+    }
+    if (total) total.textContent = clp(suma);
+    if (contador) contador.textContent = unidades;
+    guardarLS(KEY_CARRITO, carrito);
+}
+
+function exigirCuenta(mensaje) {
+    alert(mensaje);
+    window.location.href = "index.php?login=1";
+}
+
+function agregarAlCarrito(id) {
+    if (!estaLogueado()) {
+        exigirCuenta("Solo usuarios con cuenta iniciada pueden comprar pizzas. Inicia sesión o regístrate.");
         return;
     }
-
-    let total = 0;
-    let cantidadTotal = 0;
-
-    carrito.forEach(item => {
-        const subTotal = item.precio * item.cantidad;
-        total += subTotal;
-        cantidadTotal += item.cantidad;
-
-        listaCarrito.innerHTML += `
-            <div class="card mb-2 shadow-sm">
-                <div class="card-body p-2 d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="mb-0 fw-bold">${item.nombre}</h6>
-                        <small class="text-muted d-block">${item.detalles}</small>
-                        <small class="text-dark fw-bold">$${item.precio.toLocaleString("es-CL")} x ${item.cantidad}</small>
-                        <div><strong>Subtotal: $${subTotal.toLocaleString("es-CL")}</strong></div>
-                    </div>
-                    <button class="btn btn-sm btn-outline-danger ms-2" onclick="quitarDelCarrito('${item.id}')">
-                        <i class="fa fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-        `;
-    });
-
-    if (contadorCarrito) contadorCarrito.textContent = cantidadTotal;
-    if (totalCarrito) totalCarrito.textContent = total.toLocaleString("es-CL");
+    const prod = catalogo[id];
+    if (!prod) return;
+    const existente = carrito.find(it => it.tipo === "catalogo" && it.id === id);
+    if (existente) existente.cantidad += 1;
+    else carrito.push({ tipo: "catalogo", id, nombre: prod.nombre, precio: prod.precio, cantidad: 1 });
+    renderCarrito();
 }
 
-// --- 4. LÓGICA DE PIZZA PERSONALIZADA (MODAL) ---
+function quitarDelCarrito(i) {
+    carrito.splice(i, 1);
+    renderCarrito();
+}
+
 function agregarPizzaPersonalizada() {
-    const tamanoSelect = document.getElementById("customTamano");
-    const salsaSelect = document.getElementById("customSalsa");
-
-    let tamanoNombre = "Familiar";
-    let precioBase = 10000;
-
-    if (tamanoSelect) {
-        precioBase = Number(tamanoSelect.value) || 10000;
-        const textoOp = tamanoSelect.options[tamanoSelect.selectedIndex].text;
-        tamanoNombre = textoOp.split(" - ")[0] || "Personalizada";
+    if (!estaLogueado()) {
+        exigirCuenta("Debes iniciar sesión o crear una cuenta para armar y comprar tu pizza.");
+        return;
     }
+    const selTam = document.getElementById("customTamano");
+    const selSalsa = document.getElementById("customSalsa");
+    if (!selTam || !selSalsa) return;
 
-    let salsa = salsaSelect ? salsaSelect.value : "Salsa de Tomate Clásica";
-
-    const checkboxes = document.querySelectorAll('#modalCustomPizza input[type="checkbox"]:checked');
-    let extrasNombres = [];
-    let costoExtras = 0;
-
-    checkboxes.forEach(cb => {
-        const nombreIngrediente = cb.getAttribute("data-nombre") || cb.nextElementSibling?.textContent?.trim() || "Extra";
-        const valorExtra = Number(cb.value) || 1000;
-        extrasNombres.push(nombreIngrediente);
-        costoExtras += valorExtra;
-    });
-
-    const precioFinal = precioBase + costoExtras;
-    const idUnicoCustom = "custom_" + Date.now();
-    const nombreCustom = `Pizza Personalizada (${tamanoNombre})`;
-    const detallesCustom = `Salsa: ${salsa} | Extras: ${extrasNombres.length > 0 ? extrasNombres.join(", ") : "Sin extras"}`;
+    const textoTam = selTam.options[selTam.selectedIndex].text.toLowerCase();
+    const tamano = textoTam.startsWith("familiar xl") ? "familiar xl"
+        : textoTam.startsWith("mediana") ? "mediana" : "familiar";
+    const extras = Array.from(document.querySelectorAll(".ingredient-check:checked")).map(c => c.dataset.nombre);
+    const precio = Number(selTam.value) + extras.length * 1000;
 
     carrito.push({
-        id: idUnicoCustom,
-        nombre: nombreCustom,
-        precio: precioFinal,
-        detalles: detallesCustom,
+        tipo: "custom",
+        nombre: "Pizza personalizada (" + tamano + ")",
+        detalle: selSalsa.value + (extras.length ? " + " + extras.join(", ") : ""),
+        precio,
         cantidad: 1,
-        personalizada: {
-            tamano: tamanoNombre,
-            salsa: salsa,
-            extras: extrasNombres
-        }
+        personalizada: { tamano, salsa: selSalsa.value, extras }
     });
-
-    actualizarCarrito();
-
-    const form = document.getElementById("formCustomPizza");
-    if (form) form.reset();
+    renderCarrito();
 
     const modalEl = document.getElementById("modalCustomPizza");
-    if (modalEl) {
-        const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-        modalInstance.hide();
+    if (modalEl && window.bootstrap) {
+        const m = bootstrap.Modal.getInstance(modalEl);
+        if (m) m.hide();
     }
 }
 
-// --- 5. ENVÍO DEL PEDIDO AL BACKEND CON DIRECCIÓN Y LOCAL DINÁMICOS ---
+// ===== Catálogo Público (Todos pueden ver, solo logueados compran) =====
+function tarjetaProducto(p) {
+    const id = p._id || p.id;
+    const logueado = estaLogueado();
+    const botonHtml = logueado
+        ? `<button class="btn btn-warning fw-bold" onclick="agregarAlCarrito('${esc(id)}')">Agregar</button>`
+        : `<button class="btn btn-outline-secondary btn-sm fw-bold" onclick="exigirCuenta('Crea una cuenta o inicia sesión para comprar pizzas.')"><i class="fa fa-lock"></i> Inicia sesión para comprar</button>`;
+
+    return `<div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+            <img src="${esc(p.imagen)}" class="card-img-top" alt="${esc(p.nombre)}" style="height:200px;object-fit:cover" onerror="this.onerror=null;this.src='img/logo.webp'">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title fw-bold">${esc(p.nombre)}</h5>
+                <p class="card-text small text-muted">${esc(p.descripcion || (p.ingredientes || []).join(", "))}</p>
+                <div class="mt-auto d-flex justify-content-between align-items-center">
+                    <span class="fw-bold fs-5">$${clp(p.precio)}</span>
+                    ${botonHtml}
+                </div>
+            </div>
+        </div>
+    </div>`;
+}
+
+async function cargarCatalogo() {
+    const contPizzas = document.getElementById("contenedorPizzas");
+    const contCombos = document.getElementById("contenedorCombos");
+    if (!contPizzas && !contCombos) return;
+
+    try {
+        const [rp, rc] = await Promise.all([
+            fetch(`${API}/inventory/items`),
+            fetch(`${API}/inventory/combos`)
+        ]);
+        if (!rp.ok || !rc.ok) throw new Error("HTTP " + rp.status + "/" + rc.status);
+        const pizzas = await rp.json();
+        const combos = await rc.json();
+
+        [...pizzas, ...combos].forEach(p => {
+            catalogo[p._id || p.id] = { nombre: p.nombre, precio: p.precio };
+        });
+        if (contPizzas) contPizzas.innerHTML = pizzas.map(tarjetaProducto).join("");
+        if (contCombos) contCombos.innerHTML = combos.map(tarjetaProducto).join("");
+    } catch (e) {
+        const msg = '<div class="alert alert-danger">No se pudo cargar el catálogo desde el API Gateway.</div>';
+        if (contPizzas) contPizzas.innerHTML = msg;
+    }
+}
+
+// ===== Compra con Dirección (Gateway -> Auth -> Orders -> MongoDB) =====
 async function finalizarCompra() {
-    if (carrito.length === 0) {
-        alert("Tu carrito está vacío. Agrega productos antes de finalizar.");
+    const token = leerLS(KEY_TOKEN, null);
+    if (!token) {
+        // Petición sin token para evidenciar el bloqueo 401 en Network y Gateway
+        await fetch(`${API}/orders/orders`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ items: [] })
+        }).catch(() => {});
+        exigirCuenta("Debes iniciar sesión o crear una cuenta para finalizar la compra.");
         return;
     }
 
-    // Pide la dirección y el local al cliente dinámicamente
-    let direccionCliente = prompt("Ingresa la dirección de entrega (Ej: Av. República 239, Santiago):");
-    if (!direccionCliente || direccionCliente.trim() === "") {
-        direccionCliente = "Dirección no especificada";
+    if (carrito.length === 0) { alert("El carrito está vacío"); return; }
+
+    const inputDir = document.getElementById("direccionEntrega");
+    const direccion = inputDir ? inputDir.value.trim() : "";
+    if (!direccion) {
+        alert("Por favor ingresa tu dirección de entrega antes de finalizar la compra.");
+        if (inputDir) inputDir.focus();
+        return;
     }
 
-    let localSeleccionado = prompt("Ingresa el Local / Sede preferida (Ej: Casona, República, Antonio Varas, Viña del Mar):");
-    if (!localSeleccionado || localSeleccionado.trim() === "") {
-        localSeleccionado = "casona";
-    }
-
-    const payload = {
-        items: carrito.map(item => {
-            if (item.id && String(item.id).startsWith("custom_")) {
-                return {
-                    personalizada: item.personalizada || {
-                        tamano: "Familiar",
-                        salsa: "Salsa BBQ",
-                        extras: ["Pepperoni"]
-                    },
-                    precio: item.precio,
-                    cantidad: item.cantidad
-                };
-            } else {
-                return {
-                    product_id: item.id || item._id,
-                    precio: item.precio,
-                    cantidad: item.cantidad
-                };
-            }
-        }),
-        tipo_entrega: "despacho",
-        direccion: direccionCliente,
-        local_id: localSeleccionado
-    };
+    const items = carrito.map(it => it.tipo === "custom"
+        ? { personalizada: it.personalizada, cantidad: it.cantidad }
+        : { product_id: it.id, precio: it.precio, cantidad: it.cantidad });
 
     try {
-        const response = await fetch(`${API_BASE_URL}/orders/orders`, {
+        const res = await fetch(`${API}/orders/orders`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(payload)
+            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+            body: JSON.stringify({
+                items,
+                tipo_entrega: "despacho",
+                direccion: direccion
+            })
         });
+        const data = await res.json().catch(() => ({}));
 
-        if (response.ok) {
-            const data = await response.json();
-            
-            const orderID = data.id || data.order_id || data._id || "REGISTRADO";
-            const estado = data.estado || "PENDIENTE_PAGO";
-            const total = data.total ? `$${Number(data.total).toLocaleString("es-CL")}` : "";
-
-            alert(`¡Gracias por tu compra en La Fornace!\n\nID de Orden registrada: ${orderID}\nDirección: ${direccionCliente}\nLocal: ${localSeleccionado}\nEstado: ${estado}\nTotal: ${total} CLP`);
-            
-            carrito = [];
-            actualizarCarrito();
-        } else {
-            alert("Error al procesar el pedido en el servidor.");
+        if (res.status === 401) {
+            borrarLS(KEY_TOKEN); borrarLS(KEY_USER);
+            exigirCuenta("Tu sesión expiró. Inicia sesión nuevamente.");
+            return;
         }
-    } catch (error) {
-        console.error("Error en finalizarCompra:", error);
+        if (!res.ok) {
+            alert("No se pudo crear el pedido: " + (data.detail || res.status));
+            return;
+        }
+        alert(
+            "¡Pedido creado en MongoDB!\n" +
+            "ID: " + data.id + "\n" +
+            "Dirección: " + direccion + "\n" +
+            "Total: $" + clp(data.total) + " " + data.moneda
+        );
+        carrito = [];
+        if (inputDir) inputDir.value = "";
+        renderCarrito();
+    } catch (e) {
+        alert("No se pudo conectar con el API Gateway.");
     }
 }
+
+// ===== Login y Registro con Auto-Login =====
+function iniciarCuenta() {
+    const formLogin = document.querySelector("#formLogin form");
+    if (formLogin) {
+        formLogin.addEventListener("submit", async (ev) => {
+            ev.preventDefault();
+            let aviso = formLogin.querySelector(".aviso-login");
+            if (!aviso) {
+                aviso = document.createElement("div");
+                aviso.className = "aviso-login small mt-2";
+                formLogin.appendChild(aviso);
+            }
+            const email = document.getElementById("loginEmail").value;
+            const password = document.getElementById("loginPassword").value;
+
+            try {
+                const res = await fetch(`${API}/auth/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username: email, password })
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    aviso.className = "aviso-login small mt-2 text-danger";
+                    aviso.textContent = data.detail || "Credenciales inválidas";
+                    return;
+                }
+                guardarLS(KEY_TOKEN, data.access_token);
+                guardarLS(KEY_USER, email);
+                aviso.className = "aviso-login small mt-2 text-success";
+                aviso.textContent = "Sesión iniciada como " + email + ". Redirigiendo al menú...";
+                setTimeout(() => { window.location.href = "menu.php"; }, 600);
+            } catch (e) {
+                aviso.className = "aviso-login small mt-2 text-danger";
+                aviso.textContent = "No se pudo conectar con el API Gateway.";
+            }
+        });
+    }
+
+    const formRegistro = document.querySelector("#formRegistro form");
+    if (formRegistro) {
+        formRegistro.addEventListener("submit", async (ev) => {
+            ev.preventDefault();
+            let aviso = formRegistro.querySelector(".aviso-reg");
+            if (!aviso) {
+                aviso = document.createElement("div");
+                aviso.className = "aviso-reg small mt-2";
+                formRegistro.appendChild(aviso);
+            }
+            const nombre = document.getElementById("regNombre").value;
+            const email = document.getElementById("regEmail").value;
+            const password = document.getElementById("regPassword").value;
+
+            try {
+                const res = await fetch(`${API}/auth/register`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ nombre, email, password })
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    aviso.className = "aviso-reg small mt-2 text-danger";
+                    aviso.textContent = data.detail || "No se pudo registrar la cuenta";
+                    return;
+                }
+                // Auto-login inmediato con el token devuelto por /register
+                guardarLS(KEY_TOKEN, data.access_token);
+                guardarLS(KEY_USER, email);
+                aviso.className = "aviso-reg small mt-2 text-success";
+                aviso.textContent = "¡Cuenta creada y sesión iniciada como " + email + "! Redirigiendo al menú...";
+                setTimeout(() => { window.location.href = "menu.php"; }, 600);
+            } catch (e) {
+                aviso.className = "aviso-reg small mt-2 text-danger";
+                aviso.textContent = "No se pudo conectar con el API Gateway.";
+            }
+        });
+    }
+
+    if (new URLSearchParams(window.location.search).get("login") === "1") {
+        const modalEl = document.getElementById("myModal");
+        if (modalEl && window.bootstrap) bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    }
+}
+
+// ===== Contacto =====
+async function enviarContacto(ev, form) {
+    ev.preventDefault();
+    const campos = form.querySelectorAll("input, textarea");
+    const datos = {
+        nombre: campos[0].value,
+        email: campos[1].value,
+        asunto: campos[2].value,
+        mensaje: campos[3].value
+    };
+    try {
+        const res = await fetch(`${API}/orders/contact`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(datos)
+        });
+        if (!res.ok) throw new Error(res.status);
+        alert("¡Gracias por contactarnos! Te responderemos pronto.");
+        form.reset();
+    } catch (e) {
+        alert("No se pudo enviar el mensaje. Intenta nuevamente.");
+    }
+}
+
+// ===== Inicio =====
+document.addEventListener("DOMContentLoaded", () => {
+    prepararUIUsuario();
+    renderCarrito();
+    cargarCatalogo();
+    iniciarCuenta();
+});
